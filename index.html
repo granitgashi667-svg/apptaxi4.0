@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>bir — Call Center</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚕</text></svg>" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LOGIN SCREEN
+     ═══════════════════════════════════════════════════════════ -->
+<div id="login-screen" class="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🚕</div>
+    <h1 class="login-title">bir</h1>
+    <p class="login-sub">Call Center — TaxiApp</p>
+
+    <form id="login-form" class="login-form">
+      <label>
+        <span>Username</span>
+        <input type="text" id="login-username" autocomplete="username" required autofocus />
+      </label>
+      <label>
+        <span>Password</span>
+        <input type="password" id="login-password" autocomplete="current-password" required />
+      </label>
+      <button type="submit" class="btn-primary">Kyçu</button>
+      <p class="login-error" id="login-error"></p>
+    </form>
+
+    <p class="login-hint">Admin i parë: <code>G / 1</code></p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN APP (fshehur para login)
+     ═══════════════════════════════════════════════════════════ -->
+<div id="app" class="app" hidden>
+
+  <!-- ─── TOP BAR ─────────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon">🚕</span>
+      <div>
+        <div class="brand-name">bir</div>
+        <div class="brand-sub">Call Center</div>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi">
+        <span class="kpi-num" id="kpi-online">0</span>
+        <span class="kpi-lbl">Shoferë Online</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-num warn" id="kpi-waiting">0</span>
+        <span class="kpi-lbl">Në Pritje</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-num ok" id="kpi-active">0</span>
+        <span class="kpi-lbl">Aktive</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-num gold" id="kpi-revenue">0 €</span>
+        <span class="kpi-lbl">Të Ardhura</span>
+      </div>
+    </div>
+
+    <div class="userbox">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="user">
+        <div class="user-name" id="user-name">—</div>
+        <div class="user-role" id="user-role">—</div>
+      </div>
+      <button class="btn-icon" id="btn-logout" title="Dil">⎋</button>
+    </div>
+  </header>
+
+  <!-- ─── SIDEBAR ─────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <button class="nav-btn active" data-view="dispatch" title="Dispatch">
+      <span>📞</span>
+    </button>
+    <button class="nav-btn" data-view="clients" title="Klientët">
+      <span>👥</span>
+    </button>
+    <button class="nav-btn" data-view="drivers" title="Shoferët">
+      <span>🚗</span>
+    </button>
+    <button class="nav-btn" data-view="stats" title="Statistika">
+      <span>📊</span>
+    </button>
+    <button class="nav-btn" data-view="settings" title="Cilësimet" id="nav-settings" hidden>
+      <span>⚙️</span>
+    </button>
+    <div style="flex:1"></div>
+    <button class="nav-btn" data-view="admin" title="Admin" id="nav-admin" hidden>
+      <span>🛡️</span>
+    </button>
+  </aside>
+
+  <!-- ─── MAIN AREA ───────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- ══════════ VIEW: DISPATCH ══════════ -->
+    <div class="view" id="view-dispatch">
+
+      <!-- PANEL 1: THIRRJET HYRËSE -->
+      <section class="panel panel-calls">
+        <div class="panel-head">
+          <h2>Thirrjet Hyrëse</h2>
+          <span class="badge" id="badge-calls">0</span>
+        </div>
+
+        <div class="panel-body" id="calls-list">
+          <div class="empty">Nuk ka thirrje në pritje</div>
+        </div>
+
+        <div class="panel-foot">
+          <button class="hotkey" data-action="accept">
+            <kbd>F1</kbd> Prano
+          </button>
+          <button class="hotkey" data-action="close">
+            <kbd>F2</kbd> Mbyll
+          </button>
+          <button class="hotkey" data-action="hold">
+            <kbd>F3</kbd> Pritje
+          </button>
+          <button class="hotkey" data-action="transfer">
+            <kbd>F4</kbd> Transfer
+          </button>
+        </div>
+      </section>
+
+      <!-- PANEL 2: POROSI E RE -->
+      <section class="panel panel-new">
+        <div class="panel-head">
+          <h2>Porosi e Re</h2>
+        </div>
+
+        <div class="panel-body">
+          <form id="order-form" class="order-form">
+            <div class="field">
+              <label>Telefoni</label>
+              <input type="tel" id="ord-phone" placeholder="+383 44 ..." required />
+              <div class="client-hint" id="client-hint"></div>
+            </div>
+
+            <div class="field">
+              <label>Emri Klientit</label>
+              <input type="text" id="ord-client" placeholder="Emri (opsional)" />
+            </div>
+
+            <div class="field">
+              <label>Nga (Pickup)</label>
+              <input type="text" id="ord-pickup" placeholder="Adresa e marrjes" required list="pickup-list" />
+              <datalist id="pickup-list"></datalist>
+            </div>
+
+            <div class="field">
+              <label>Ku (Destinacioni)</label>
+              <input type="text" id="ord-dest" placeholder="Adresa e destinacionit" list="dest-list" />
+              <datalist id="dest-list"></datalist>
+            </div>
+
+            <div class="row-2">
+              <div class="field">
+                <label>Zona</label>
+                <input type="text" id="ord-zone" placeholder="Zona" list="zone-list" />
+                <datalist id="zone-list"></datalist>
+              </div>
+              <div class="field">
+                <label>Tarifa</label>
+                <select id="ord-tariff">
+                  <option value="">— Zgjidh —</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Shënim</label>
+              <input type="text" id="ord-remark" placeholder="Shënim (opsional)" list="remark-list" />
+              <datalist id="remark-list"></datalist>
+            </div>
+
+            <div class="row-2">
+              <div class="field">
+                <label>Termin</label>
+                <input type="datetime-local" id="ord-preorder" />
+              </div>
+              <div class="field">
+                <label>Çmim (€)</label>
+                <input type="number" id="ord-price" step="0.5" min="0" placeholder="0.00" />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn-ghost" id="btn-clear">Pastro</button>
+              <button type="submit" class="btn-primary">Dërgo Porosinë</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- PANEL 3: POROSITË -->
+      <section class="panel panel-orders">
+        <div class="panel-head">
+          <div class="tabs">
+            <button class="tab active" data-tab="waiting">Në Pritje</button>
+            <button class="tab" data-tab="active">Aktive</button>
+            <button class="tab" data-tab="preorders">Termine</button>
+          </div>
+          <span class="badge" id="badge-orders">0</span>
+        </div>
+
+        <div class="panel-body" id="orders-list">
+          <div class="empty">Nuk ka porosi</div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ══════════ VIEW: CLIENTS ══════════ -->
+    <div class="view" id="view-clients" hidden>
+      <section class="panel panel-full">
+        <div class="panel-head">
+          <h2>Klientët</h2>
+          <input type="search" id="clients-search" placeholder="Kërko me emër ose telefon..." />
+        </div>
+        <div class="panel-body" id="clients-list"></div>
+      </section>
+    </div>
+
+    <!-- ══════════ VIEW: DRIVERS ══════════ -->
+    <div class="view" id="view-drivers" hidden>
+      <section class="panel panel-full">
+        <div class="panel-head">
+          <h2>Shoferët</h2>
+        </div>
+        <div class="panel-body" id="drivers-list"></div>
+      </section>
+    </div>
+
+    <!-- ══════════ VIEW: STATS ══════════ -->
+    <div class="view" id="view-stats" hidden>
+      <section class="panel panel-full">
+        <div class="panel-head">
+          <h2>Statistika</h2>
+        </div>
+        <div class="panel-body" id="stats-body"></div>
+      </section>
+    </div>
+
+    <!-- ══════════ VIEW: SETTINGS ══════════ -->
+    <div class="view" id="view-settings" hidden>
+      <section class="panel panel-full">
+        <div class="panel-head">
+          <h2>Cilësimet</h2>
+        </div>
+        <div class="panel-body">
+          <p style="color:var(--muted)">Do të shtohet në fazat e ardhshme.</p>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- ─── STATUS BAR ──────────────────────────────────────── -->
+  <footer class="statusbar">
+    <span id="status-text">Gati</span>
+    <span id="status-socket" class="socket-badge offline">○ Socket</span>
+  </footer>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: DETAJE POROSIE
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal" id="modal-order" hidden>
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modal-order-title">Porosia</h3>
+      <button class="btn-icon" id="modal-order-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-order-body"></div>
+    <div class="modal-foot" id="modal-order-foot"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: CAKTO SHOFER
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal" id="modal-assign" hidden>
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Cakto Shofer</h3>
+      <button class="btn-icon" id="modal-assign-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-assign-body"></div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toasts" class="toasts"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>
